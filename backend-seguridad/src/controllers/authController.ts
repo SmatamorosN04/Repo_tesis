@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase.js";
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken'
+import type { AuthenticatedRequest } from "../middlewares/auth.js";
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -190,5 +191,50 @@ export const resetPassword = async (req: Request, res: Response) => {
     } catch (error: any){
         console.error(`Error en resetPassword`, error);
         return res.status(500).json({ message: 'Error interno del servidor.' });     
+    }
+};
+
+export const changePassword = async (req: AuthenticatedRequest, res: Response) => {
+    try{
+        const { currentPassword, newPassword}= req.body;
+        const userId = req.user?.id;
+
+        if (!currentPassword || !newPassword){
+            return res.status(400).json({ message: 'Ambas contras son requeridas'})
+        }
+
+        const {data: user, error: userError} = await supabase
+            .from('users')
+            .select('password')
+            .eq('id', userId)
+            .maybeSingle();
+
+        if (userError || !user){
+            return res.status(404).json({ message: 'Usuario no encontrado'})
+        }
+
+        const isValid = await bcrypt.compare(currentPassword, user.password);
+            if(!isValid){
+                return res.status(400).json({ message: 'la contra actual es incorrecta'})
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            const now = new Date().toISOString();
+
+            const { error: updateError} = await supabase
+                .from('users')
+                .update({password: hashedPassword, updateAt: now})
+                .eq('id', userId);
+
+            if( updateError){
+                console.error('Error al cambiar contraseña:', updateError);
+            return res.status(500).json({ message: 'No se pudo cambiar la contraseña.' });
+            }
+
+            return res.status(200).json({ message: 'Contraseña actualizada exitosamente.' });
+
+    } catch (error: any){
+        console.error('Error en changePassword:', error);
+        return res.status(500).json({ message: 'Error interno del servidor.' });
     }
 }
