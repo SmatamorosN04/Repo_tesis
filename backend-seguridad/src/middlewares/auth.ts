@@ -48,3 +48,10 @@ export const authenticateToken = async (
     }
 }
 
+export const requireRegistereedUser = (req: any, res: Response, next: NextFunction) => {
+    if ( req.user && req.user.role === 'guest'){
+        return res.status(403).json({
+            message: 'Esta funcion requiere registrar una cuenta completa'
+        })
+    }
+}

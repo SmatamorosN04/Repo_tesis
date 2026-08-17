@@ -40,10 +40,11 @@ export const register = async (req: Request, res: Response) => {
                     username: user,
                     email: email,
                     password: hashedPassword,
+                    role: 'user',
                     updatedAt: now
                 },
             ])
-            .select('id, username, email')
+            .select('id, username, email, role')
             .single();
 
         if (insertError) {
@@ -287,6 +288,55 @@ export const getMe = async(req: Request, res: Response) => {
     } catch(error){
         console.error('Error en getMe', error);
         return res.status(500).json({ message: 'error interno del servidor'});
+    }
+}
+
+export const guestLogin = async (req: Request, res: Response) => {
+    try{
+        const guestUsername = `invitado_${Math.floor(100000 + Math.random() * 900000)}`;
+        const now = new Date().toISOString();
+
+        const { data: guestUser, error: insertError} = await supabase
+            .from('users')
+            .insert([
+                {
+                   username: guestUsername,
+                   email: `${guestUsername}@temp.local`,
+                   password: null,
+                   role:'guest',
+                   updateAt: now 
+                },
+            ])
+            .select('id, username, role')
+            .single();
+
+        if (insertError){
+            console.error('Error al crear usuario invitado', insertError);
+            return res.status(500).json({ message: 'NO se pudo iniciar como invitado'})
+        }
+
+        const token = jwt.sign(
+            {
+                id:guestUser.id,
+                username: guestUser.username,
+                role:guestUser.role
+            },
+            process.env.JWT_SECRET || 'my_secret',
+            {expiresIn:'24h'}
+        );
+
+        return res.status(200).json({
+            message: 'sesion de invitado iniciada',
+            token,
+            user: {
+                id: guestUser.id,
+                username: guestUser.username,
+                role:guestUser.role
+            }
+        });
+    } catch(error: any){
+        console.error('Error en guestLogin:', error);
+        return res.status(500).json({ message: 'Error interno del servidor.' });
     }
 }
 
