@@ -84,6 +84,9 @@ export const login = async ( req: Request, res: Response) => {
                 return res.status(400).json({message: 'credenciales invalidas'});
             }
 
+            if (userData === 'guest' || !userData.password){
+                return res.status(400).json({ message: 'credenciales invalidas'})
+            }
             const isPasswordValid = await bcrypt.compare(password, userData.password);
 
             if(!isPasswordValid){
@@ -91,8 +94,9 @@ export const login = async ( req: Request, res: Response) => {
             }
 
             const jwtSecret = process.env.JWT_SECRET || 'secret_key';
+           
             const token = jwt.sign(
-                {id: userData.id, email: userData.email},
+                {id: userData.id, email: userData.email, role: userData.role || 'user'},
                 jwtSecret,
                 {expiresIn: '7d'}
             );
