@@ -5,6 +5,7 @@ interface UserData{
     id:number;
     username: string;
     email:string;
+    role: 'user'| 'guest'| string;
 }
 interface LoginResponse {
     message: string;
@@ -20,6 +21,11 @@ interface RegisterResponse {
         createdAt: string;
     };
 }
+
+interface ForgotPasswordResponse{
+    message: string;
+}
+
 export async function loginUser(identifier: string, password: string): Promise<LoginResponse>{
     const data = await apiFetch<LoginResponse>('/auth/login',{
         method:'POST',
@@ -51,4 +57,22 @@ export async function logoutUser(): Promise<void> {
 export async function isAuthenticated(): Promise<boolean>{
     const token = await SecureStore.getItemAsync('access_token');
     return !!token;
+}
+
+export async function loginGuest(): Promise<LoginResponse>{
+    const data =await apiFetch<LoginResponse>('/auth/guest-login',{
+        method: 'POST',
+    });
+
+    if (data.token) {
+        await SecureStore.setItemAsync('access_token', data.token);
+    }
+    return data;
+}
+
+export async function forgotPassword(email:string): Promise<ForgotPasswordResponse>{
+    return apiFetch<ForgotPasswordResponse>('/auth/forgot-password',{
+        method: 'POST',
+        body: JSON.stringify({email}),
+    })
 }
