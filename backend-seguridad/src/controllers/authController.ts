@@ -238,3 +238,29 @@ export const changePassword = async (req: AuthenticatedRequest, res: Response) =
         return res.status(500).json({ message: 'Error interno del servidor.' });
     }
 }
+
+
+export const getMe = async(req: Request, res: Response) => {
+    try{
+        const userId = (req as any).user?.id;
+
+        if(!userId){
+            return res.status(401).json({message: 'usuario no autenticado'});
+        }
+
+        const { data: user, error} = await supabase
+            .from('users')
+            .select('id, email,username, created_at')
+            .eq('id', userId)
+            .single();
+
+        if (error || !user){
+            return res.status(404).json({message: 'usuario no encontrado'});
+        }
+
+        return res.status(200).json({user});
+    } catch(error){
+        console.error('Error en getMe', error);
+        return res.status(500).json({ message: 'error interno del servidor'});
+    }
+}
