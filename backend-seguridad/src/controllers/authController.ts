@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { supabase } from "../lib/supabase.js";
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken'
 
 export const register = async (req: Request, res: Response) => {
@@ -105,4 +106,89 @@ export const login = async ( req: Request, res: Response) => {
         console.error('Error en controlador login:', error);
         return res.status(500).json({ message: 'Error interno del servidor.' });
         }
+};
+
+////////////////////////////////////////////////////////////////////
+
+export const forgotPassword =async (req: Request, res: Response) => {
+    try{
+        const {email} = req.body;
+
+        if (!email){
+            return res.status(400).json({ message: 'El correo electronico es requerido.'});
+        }
+
+        const { data: user, error: userError} = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('email', email)
+        .maybeSingle();
+
+        if (userError || !user){
+            return res.status(200).json({ message: 'si el correo existe, se enviaran las instrucciones.'})
+        }
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 3600000).toISOString();
+
+        const {error: resetError} =await supabase
+        .from('password_resets')
+        .insert([{user_id: user.id, token, expires_at: expiresAt}]);
+
+        if (resetError){
+            console.error('Error al generar reset token:', resetError);
+            return res.status(500).json({ message: 'Error interno en la base de datos.' });
+        }
+        console.log(`[RESET TOKEN] para ${email}: ${token}`);
+
+        return res.status(200).json({ message: 'si el correo existe se enviaran las instrucciones'});
+
+    } catch (error: any){
+        console.error('error en forgotpassword', error);
+        return res.status(500).json({ message: 'Error interno del servidor'})
+    }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+    try{
+        const { token, newPassword} = req.body;
+
+        if (!token || !newPassword){
+            return res.status(400).json({message: 'el token y la nueva contra son requeridos'});
+        }
+
+        const {data: resetRecord, error: resetError} = await supabase
+        .from('password_resets')
+        .select('*')
+        .eq('token', token)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+        if(resetError || !resetRecord){
+            return res.status(400).json({message: 'token invalido o expirado'});
+        }
+
+        const hashedPassword =await bcrypt.hash(newPassword, 10);
+        const now = new Date().toISOString();
+
+        const { error: updateError} = await supabase
+        .from('users')
+        .update({ password: hashedPassword, updateAt: now})
+        .eq('id', resetRecord.user_id);
+
+        if (updateError){
+            console.error('Error al actualizar', updateError);
+            return res.status(500).json({ message: 'No se pudo actualizar la contra '});
+        }
+
+        await supabase
+            .from('password_resets')
+            .delete()
+            .eq('id', resetRecord.id);
+
+            return res.status(200).json({ message: 'contra restablecida exitosamente'})
+    } catch (error: any){
+        console.error(`Error en resetPassword`, error);
+        return res.status(500).json({ message: 'Error interno del servidor.' });     
+    }
 }
