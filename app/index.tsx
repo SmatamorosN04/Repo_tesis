@@ -5,6 +5,7 @@ import '../global.css'
 import { Logo } from '@/components/Logo';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { GuestLoginButton } from '@/components/GuestLoginButton';
 
 export default function WelcomeScreen(){
 
@@ -60,15 +61,7 @@ export default function WelcomeScreen(){
                                     Iniciar Sesion
                                 </Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                activeOpacity={0.7}
-                                onPress={() => router.push('/(tabs)')}
-                                className='w-full bg-[#D9D9D9] py-3.5 rounded-full items-center active:bg-slate-300'    
-                            >
-                                <Text className='text-slate-80 font-bold text-sm md:text-base shadow-xs'>
-                                Entrar como invitado
-                            </Text>
-                            </TouchableOpacity>
+                           <GuestLoginButton onSuccess={() => navigation.navigate('Home')}/>
                         </View>
                     </View>
                 </View>
