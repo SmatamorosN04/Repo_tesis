@@ -47,3 +47,4 @@ export const authenticateToken = async (
         res.status(403).json({ error: 'token invalido o expirado'})
     }
 }
+

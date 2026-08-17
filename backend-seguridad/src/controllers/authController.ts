@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken'
 import type { AuthenticatedRequest } from "../middlewares/auth.js";
+import { sendEmail } from "../services/mailService.js";
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -50,6 +51,7 @@ export const register = async (req: Request, res: Response) => {
             return res.status(500).json({ message: 'No se pudo crear el usuario.' });
         }
 
+       
         return res.status(201).json({
             message: 'Usuario registrado exitosamente',
             user: newUser,
@@ -121,7 +123,7 @@ export const forgotPassword =async (req: Request, res: Response) => {
 
         const { data: user, error: userError} = await supabase
         .from('users')
-        .select('id, email')
+        .select('id, email, username')
         .eq('email', email)
         .maybeSingle();
 
@@ -129,18 +131,41 @@ export const forgotPassword =async (req: Request, res: Response) => {
             return res.status(200).json({ message: 'si el correo existe, se enviaran las instrucciones.'})
         }
 
-        const token = crypto.randomBytes(32).toString('hex');
+        const otpCode = crypto.randomInt(100000, 999999).toString();
+
+        const hashedOtp = await bcrypt.hash(otpCode, 10);
+
         const expiresAt = new Date(Date.now() + 3600000).toISOString();
 
         const {error: resetError} =await supabase
         .from('password_resets')
-        .insert([{user_id: user.id, token, expires_at: expiresAt}]);
+        .insert([{user_id: user.id, token: hashedOtp, expires_at: expiresAt}]);
 
         if (resetError){
             console.error('Error al generar reset token:', resetError);
             return res.status(500).json({ message: 'Error interno en la base de datos.' });
         }
-        console.log(`[RESET TOKEN] para ${email}: ${token}`);
+
+        try{
+            await sendEmail({
+                to: user.email,
+                subject: 'Tu codigo de recuperacion de contra',
+                html: `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                        <h2>Recuperacion de contra</h2>
+                        <p>Hola <strong>${user.username || 'usuario'}</strong>.</p>
+                        <p>Has solicitado reestablecer tu contra. utiliza el siguiente codigo  OTP:</p>
+                        <div style="background-color: #f4f4f5; padding: 14px 28px; display: inline-block; font-size: 28px; font-weight: bold; letter-spacing:5px; border-radius: 8px; margin: 16px 0; color: #111;">
+                         ${otpCode}
+                    </div>
+                    <p style="color: #666; font-size: 13px;">Este codigo expirara en 15 minutos. </p>
+                    </div>
+                `,
+            });
+        } catch ( mailError){
+            console.error('Error al enviar el correo con Resend:', mailError);
+            return res.status(500).json({ message: 'No se pudo enviar el correo de recuperacion.'})
+        }
 
         return res.status(200).json({ message: 'si el correo existe se enviaran las instrucciones'});
 
@@ -264,3 +289,5 @@ export const getMe = async(req: Request, res: Response) => {
         return res.status(500).json({ message: 'error interno del servidor'});
     }
 }
+
+
