@@ -61,7 +61,7 @@ export default function WelcomeScreen(){
                                     Iniciar Sesion
                                 </Text>
                             </TouchableOpacity>
-                           <GuestLoginButton onSuccess={() => navigation.navigate('Home')}/>
+                           <GuestLoginButton onSuccess={() => router.push('/GuestLogin' as any)}/>
                         </View>
                     </View>
                 </View>
