@@ -59,7 +59,7 @@ export async function isAuthenticated(): Promise<boolean>{
     return !!token;
 }
 
-export async function loginGuest(): Promise<LoginResponse>{
+export async function loginGuest(username: string): Promise<LoginResponse>{
     const data =await apiFetch<LoginResponse>('/auth/guest-login',{
         method: 'POST',
     });
