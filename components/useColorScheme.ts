@@ -1,6 +1,11 @@
 import { useColorScheme as useColorSchemeCore } from 'react-native';
 
-export const useColorScheme = () => {
+type PrimaryColorScheme = 'light' | 'dark';
+
+export const useColorScheme = (): PrimaryColorScheme | null | undefined => {
   const coreScheme = useColorSchemeCore();
-  return coreScheme === 'unspecified' ? 'light' : coreScheme;
+  // La API estricta de RN ya no expone 'unspecified'; se normaliza igual por compatibilidad.
+  return (coreScheme as string | null) === 'unspecified'
+    ? 'light'
+    : (coreScheme as PrimaryColorScheme);
 };

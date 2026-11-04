@@ -84,7 +84,7 @@ export const login = async ( req: Request, res: Response) => {
                 return res.status(400).json({message: 'credenciales invalidas'});
             }
 
-            if (userData === 'guest' || !userData.password){
+            if (userData.role === 'guest' || !userData.password){
                 return res.status(400).json({ message: 'credenciales invalidas'})
             }
             const isPasswordValid = await bcrypt.compare(password, userData.password);
@@ -204,7 +204,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
         const { error: updateError} = await supabase
         .from('users')
-        .update({ password: hashedPassword, updateAt: now})
+        .update({ password: hashedPassword, updatedAt: now})
         .eq('id', resetRecord.user_id);
 
         if (updateError){
@@ -253,7 +253,7 @@ export const changePassword = async (req: AuthenticatedRequest, res: Response) =
 
             const { error: updateError} = await supabase
                 .from('users')
-                .update({password: hashedPassword, updateAt: now})
+                .update({password: hashedPassword, updatedAt: now})
                 .eq('id', userId);
 
             if( updateError){
@@ -297,8 +297,38 @@ export const getMe = async(req: Request, res: Response) => {
 
 export const guestLogin = async (req: Request, res: Response) => {
     try{
-        const guestUsername = `invitado_${Math.floor(100000 + Math.random() * 900000)}`;
+        // Nombre de usuario opcional enviado desde la app ("Modo Invitado").
+        const { username } = req.body || {};
+
+        let guestUsername = `invitado_${Math.floor(100000 + Math.random() * 900000)}`;
+        if (username && typeof username === 'string') {
+            const trimmed = username.trim().slice(0, 20);
+            if (trimmed.length >= 3) {
+                guestUsername = trimmed;
+            }
+        }
+
+        // Evitar colisiones de nombre de usuario con cuentas existentes.
+        const { data: existing, error: checkError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('username', guestUsername)
+            .maybeSingle();
+
+        if (checkError) {
+            console.error('Error al verificar nombre de usuario:', checkError);
+            return res.status(500).json({ message: 'Error interno del servidor.' });
+        }
+
+        if (existing) {
+            return res.status(409).json({ message: 'Ese nombre ya está en uso, elige otro.' });
+        }
+
         const now = new Date().toISOString();
+
+        // La columna password es NOT NULL en la base de datos; en invitados se
+        // guarda un hash aleatorio imposible de adivinar (nunca se usa para login).
+        const randomPassword = await bcrypt.hash(crypto.randomUUID(), 10);
 
         const { data: guestUser, error: insertError} = await supabase
             .from('users')
@@ -306,9 +336,9 @@ export const guestLogin = async (req: Request, res: Response) => {
                 {
                    username: guestUsername,
                    email: `${guestUsername}@temp.local`,
-                   password: null,
+                   password: randomPassword,
                    role:'guest',
-                   updateAt: now 
+                   updatedAt: now
                 },
             ])
             .select('id, username, role')

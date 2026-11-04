@@ -8,109 +8,129 @@ import { Logo } from '@/components/Logo';
 export default function RecuperarScreen(){
     const router = useRouter();
     const [email, setEmail] = useState('');
-    const {send, setSend} = useState(false);
+    const [send, setSend] = useState(false);
 
     const handleRecuperar = () => {
         if (!email){
-            Alert.alert('campo requerido', 'por favor ingresa tu correo electronico');
+            Alert.alert('Campo requerido', 'Por favor ingresa tu correo electrónico');
             return;
         }
 
         console.log('solicitud de recuperacion para', email);
-        setSend(true)
+        setSend(true);
     };
 
     return(
         <SafeAreaView className='flex-1 bg-gradient-to-t from-white to-[#FFF5C3]'>
             <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding': 'height'}
+                behavior={Platform.OS === 'ios' ? 'padding': undefined}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
                 className='flex-1'
             >
                 <ScrollView
-                    contentContainerClassName='flex-grow justify-between p-6 md:p-12'
+                    contentContainerClassName='flex-grow p-6 md:p-10 pb-16'
                     bounces={false}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    <View className='flex-row items-center gap-3'>
-                        <Logo size={22} />
-                        <View>
-                            <Text className='text-base md:text-lg font-bold text-slate-900 leading-tight'>
-                                Seguridad
-                            </Text>
-                            <Text className='text-base md:text-lg font-bold text-slate-900 leading-tight'>
-                                Ciudadana
-                            </Text>
-                        </View>
+                    {/* Header con logo + nombre */}
+                    <View className='flex-row items-center gap-3 pt-2'>
+                        <Logo size={16} />
+                        <Text className='text-[15px] font-bold text-slate-900 tracking-tight'>
+                            Seguridad Ciudadana
+                        </Text>
                     </View>
 
-                    <View className='w-full max-w-sm self-center bg-white/80 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 my-auto'>
-                    
-                    {!send ? (
-                        <>
-                         <Text className='text-2xl font-bold text-slate-900 text-center mb-2'>
-                            Recuperar Contraseña
-                         </Text>
+                    <View className='my-auto py-8 max-w-sm self-center w-full'>
+                        {/* Botón atrás estilo iOS */}
+                        <TouchableOpacity
+                            onPress={() => router.back()}
+                            className='self-start flex-row items-center mb-4'
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                            <FontAwesome5 name="chevron-left" size={16} color="#d99b26" />
+                            <Text className='text-[#d99b26] font-semibold text-[15px] ml-1.5'>Atrás</Text>
+                        </TouchableOpacity>
 
-                         <Text className='text-slate-600 text-sm text-center mb-6 leading-relaxed'>
-                            Ingresa tu correo electronico registrado y te enviaremos las instrucciones para reestablecer tu cuenta.
-                         </Text>
+                        {!send ? (
+                            <>
+                                <View className='items-center mb-8'>
+                                    <View className='w-16 h-16 rounded-2xl bg-slate-900 items-center justify-center shadow-lg border-2 border-[#F5D547]'>
+                                        <FontAwesome5 name='lock' size={24} color='#F5D547' />
+                                    </View>
+                                    <Text className='text-[28px] font-extrabold text-slate-900 tracking-tight mt-5'>
+                                        Recuperar contraseña
+                                    </Text>
+                                    <Text className='text-[15px] text-slate-500 mt-2 text-center leading-relaxed'>
+                                        Ingresa tu correo electrónico registrado y te enviaremos las instrucciones.
+                                    </Text>
+                                </View>
 
-                         <View className='mb-6'>
-                            <View className='flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-3'>
-                                <FontAwesome5 name="envelope" size={16} color="#64748b" className="mr-3" />
-                                <TextInput
-                                    placeholder='correo electronico'
-                                    placeholderTextColor="#94a3b8"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType='email-address'
-                                    className='flex-1 text-slate-800 text-base p-0'
-                                    autoCapitalize='none'
-                                />
+                                {/* Campo estilo iOS */}
+                                <View className='flex-row items-center bg-[#F2F2F7] rounded-2xl px-4 py-3.5 mb-8'>
+                                    <FontAwesome5 name="envelope" size={15} color="#8E8E93" />
+                                    <TextInput
+                                        placeholder='Correo electrónico'
+                                        placeholderTextColor="#8E8E93"
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        keyboardType='email-address'
+                                        className='flex-1 text-slate-900 text-[15px] ml-3 p-0'
+                                        autoCapitalize='none'
+                                    />
+                                </View>
+
+                                <TouchableOpacity
+                                    onPress={handleRecuperar}
+                                    activeOpacity={0.85}
+                                    className='items-center justify-center h-[52px] mb-5 overflow-hidden shadow-lg rounded-2xl'
+                                    style={{ shadowColor: '#d99b26', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}
+                                >
+                                    <View
+                                        className='flex-1 self-stretch items-center justify-center rounded-2xl'
+                                        style={{ backgroundColor: '#d99b26' }}
+                                    >
+                                        <Text className='text-[#1E1E1E] font-bold text-base tracking-wide'>
+                                            Enviar instrucciones
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </>
+                        ): (
+                            <View className='items-center py-4'>
+                                <View className='w-20 h-20 bg-green-50 rounded-full items-center justify-center mb-5 border border-green-200'>
+                                    <FontAwesome5 name='check' size={30} color='#22c55e' />
+                                </View>
+
+                                <Text className='text-2xl font-extrabold text-slate-900 tracking-tight mb-2'>
+                                    ¡Correo enviado!
+                                </Text>
+
+                                <Text className='text-slate-500 text-[15px] text-center mb-8 leading-relaxed'>
+                                    Enviamos las instrucciones a{'\n'}
+                                    <Text className='font-semibold text-slate-800'>{email}</Text>
+                                    {'\n'}Revisa tu bandeja de entrada o spam.
+                                </Text>
+
+                                <TouchableOpacity
+                                    onPress={()=>setSend(false)}
+                                    className='self-start flex-row items-center'
+                                >
+                                    <FontAwesome5 name='redo' size={13} color="#d99b26" />
+                                    <Text className='text-[#d99b26] text-[15px] font-semibold ml-2'>
+                                        Usar otro correo
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
-                         </View>
+                        )}
 
-                         <TouchableOpacity
-                            onPress={handleRecuperar}
-                            activeOpacity={0.8}
-                            className='bg-[#d99b26] py-3.5 rounded-full items-center justify-center mb-6 shadow-sm'
-                         >
-                            <Text className='text-white font-bold text-base uppercase tracking-wider'>
-                                Enviar Instrucciones
-                            </Text>
-                         </TouchableOpacity>
-                        </>
-                    ): (
-                        <View className='items-center py-4'>
-                            <View className='w-16 h-16 bg-amber-100 rounded-full items-center justify-center mb-4 border border-amber-300'>
-                                <FontAwesome5 name="paper-plane" size={26} color="#d99b26" />
-                            </View>
-
-                            <Text className='text-xl font-bold text-slate-900 text-center mb-2 '>
-                                Correo enviado !
-                            </Text>
-
-                            <Text className='text-slate-600 text-sm text-center mb-6 leading-relaxed'>
-                                Hemos enviado las instrucciones de recuperacion a <Text className='font-semibold text-slate-800'>{email}</Text>. Por favor revisa tu bandeja de entrada o spam.
-                            </Text>
-
-                            <TouchableOpacity
-                                onPress={()=>setSend(false)}
-                                className='mb-4'
-                            >
-                                <Text className='text-slate-500 text-xs font-semibold underline'>
-                                    Reintentar con otro correo
+                        <View className='items-center pt-4'>
+                            <TouchableOpacity onPress={()=>router.push('/login' as any)}>
+                                <Text className='text-slate-600 text-[15px]'>
+                                    Recordaste tu contraseña?{' '}
+                                    <Text className='text-[#d99b26] font-bold'>Inicia sesión</Text>
                                 </Text>
                             </TouchableOpacity>
                         </View>
-                    )}
-
-                    <View className='items-center border-t border-slate-200/60 pt-4'>
-                        <TouchableOpacity onPress={()=>router.push('/login' as any)}>
-                            <Text className='text-slate-600 text-sm font-medium'>
-                                Recordaste tu contraseña? <Text className='text-[#d99b26] font-semibold'>Inicia Sesion</Text>
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>

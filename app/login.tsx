@@ -16,7 +16,7 @@ export default  function LoginScreen(){
     const [loading, setLoading] = useState(false);
     const [showPassword, setPasswordVisibility] = useState(false);
 
-    const handleLogin = async () => { 
+    const handleLogin = async () => {
   if (!usuario.trim() || !contrasena.trim()) {
     Alert.alert('Campos incompletos', 'Por favor ingresa tu usuario y contraseña.');
     return;
@@ -35,117 +35,137 @@ export default  function LoginScreen(){
     return(
 
       <LinearGradient
-         colors={['#FFF5C3', '#FFFFFF']} 
+         colors={['#FFF5C3', '#FFFFFF']}
         style={{ flex: 1 }}
       >
-          <SafeAreaView className='flex-1 bg-gradient-to-t from-white to-[#FFF5C3]'>
+          <SafeAreaView className='flex-1'>
             <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
               className="flex-1"
             >
               <ScrollView
-                contentContainerClassName="flex-grow justify-between p-6 md:-12"
+                contentContainerClassName="flex-grow justify-end p-6 md:p-10 pb-12"
                 bounces={false}
+                keyboardShouldPersistTaps="handled"
                >
-                 <View className="flex-row items-center gap-3">
-                   <Logo size={22} />
-                   <View>
-                     <Text className="text-base md:text-lg font-bold text-slate-900 leading-tight">
-                       Seguridad
+                 {/* Header con logo + nombre */}
+                 <View className="flex-row items-center gap-3 pt-2">
+                   <Logo size={16} />
+                   <Text className="text-[15px] font-bold text-slate-900 tracking-tight">
+                     Seguridad Ciudadana
+                   </Text>
+                 </View>
+
+                 {/* Tarjeta principal estilo iOS */}
+                 <View className="my-auto py-10">
+                   <View className="items-center mb-8">
+                     <View className="w-16 h-16 rounded-2xl bg-slate-900 items-center justify-center shadow-lg border-2 border-[#F5D547]">
+                       <FontAwesome5 name="shield-alt" size={26} color="#F5D547" />
+                     </View>
+                     <Text className="text-[28px] font-extrabold text-slate-900 tracking-tight mt-5">
+                       Bienvenido
                      </Text>
-                     <Text className="text-base md:text-lg font-bold text-slate-900 leading-tight">
-                       Ciudadana
+                     <Text className="text-[15px] text-slate-500 mt-1 text-center">
+                       Ingresa a tu cuenta para continuar
                      </Text>
+                   </View>
+
+                   {/* Campos estilo iOS: fondo gris, sin borde */}
+                   <View className="gap-3">
+                     <View className="flex-row items-center bg-[#F2F2F7] rounded-2xl px-4 py-3.5">
+                       <FontAwesome5 name="user" size={15} color="#8E8E93" />
+                       <TextInput
+                         placeholder="Usuario o correo electrónico"
+                         placeholderTextColor="#8E8E93"
+                         value={usuario}
+                         onChangeText={setUsuario}
+                         className="flex-1 text-slate-900 text-[15px] ml-3 p-0"
+                         autoCapitalize="none"
+                         autoCorrect={false}
+                         keyboardType='email-address'
+                       />
+                     </View>
+
+                     <View className="flex-row items-center bg-[#F2F2F7] rounded-2xl px-4 py-3.5">
+                       <FontAwesome5 name="lock" size={15} color="#8E8E93" />
+                       <TextInput
+                         placeholder="Contraseña"
+                         placeholderTextColor="#8E8E93"
+                         secureTextEntry={!showPassword}
+                         value={contrasena}
+                         onChangeText={setContrasena}
+                         className="flex-1 text-slate-900 text-[15px] ml-3 p-0"
+                       />
+                       <TouchableOpacity
+                         onPress={() => setPasswordVisibility(!showPassword)}
+                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                       >
+                         <FontAwesome5
+                           name={showPassword ? "eye-slash" : "eye"}
+                           size={15}
+                           color="#8E8E93"
+                         />
+                       </TouchableOpacity>
+                     </View>
+                   </View>
+
+                   <TouchableOpacity
+                     onPress={() => router.push('/recuperar' as any)}
+                     className="self-end mt-3"
+                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                   >
+                     <Text className="text-[#d99b26] text-[13px] font-semibold">
+                       ¿Olvidaste tu contraseña?
+                     </Text>
+                   </TouchableOpacity>
+
+                   {/* Botón principal con gradiente */}
+                   <TouchableOpacity
+                     onPress={handleLogin}
+                     activeOpacity={0.85}
+                     disabled={loading}
+                     className="mt-7 items-center justify-center h-[52px] rounded-2xl overflow-hidden shadow-lg"
+                     style={{ shadowColor: '#d99b26', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}
+                   >
+                     <LinearGradient
+                       colors={!loading ? ['#E8B33A', '#d99b26'] : ['#9CA3AF', '#9CA3AF']}
+                       start={{ x: 0, y: 0 }}
+                       end={{ x: 1, y: 1 }}
+                       style={{ flex: 1, alignSelf: 'stretch', borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
+                     >
+                       {loading ? (
+                         <ActivityIndicator color="#ffffff" />
+                       ) : (
+                         <Text className="text-[#1E1E1E] font-bold text-base tracking-wide">
+                           Iniciar sesión
+                         </Text>
+                       )}
+                     </LinearGradient>
+                   </TouchableOpacity>
+
+                   <View className="items-center mt-8">
+                     <TouchableOpacity onPress={() => router.push('/registro' as any)}>
+                       <Text className="text-slate-600 text-[15px]">
+                         ¿No tienes cuenta?{' '}
+                         <Text className="text-[#d99b26] font-bold">Regístrate</Text>
+                       </Text>
+                     </TouchableOpacity>
                    </View>
                  </View>
 
-                  <View className="w-full max-w-sm self-center bg-white/80 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 my-auto">
-                   <Text className="text-2xl font-bold text-slate-900 text-center mb-6">
-                     Bienvenido
+                 {/* Pie */}
+                 <View className="items-center pb-2">
+                   <Text className="text-xs text-slate-400 font-medium">
+                     Al continuar aceptas los Términos y el Aviso de Privacidad
                    </Text>
-
-                 <View className="mb-4">
-                  <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-3">
-                   <FontAwesome5 name="user" size={16} color="#64748b" className="mr-3" />
-                   <TextInput
-                     placeholder="Usuario o correo electronico"
-                     placeholderTextColor="#94a3b8"
-                     value={usuario}
-                     onChangeText={setUsuario}
-                     className="flex-1 text-slate-800 text-base p-0"
-                     autoCapitalize="none"
-                     autoCorrect={false}
-                     keyboardType='email-address'
-                   />
                  </View>
-                </View>
-               
-
-                  <View className="mb-6">
-                   <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-3">
-                   <FontAwesome5 name="lock" size={16} color="#64748b" className="mr-3" />
-                   <TextInput
-                     placeholder="Contraseña"
-                     placeholderTextColor="#94a3b8"
-                     secureTextEntry={!showPassword}
-                     value={contrasena}
-                     onChangeText={setContrasena}
-                     className="flex-1 text-slate-800 text-base p-0"
-                   />
-                    <TouchableOpacity 
-                      onPress={() => setPasswordVisibility(!showPassword)}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    >
-                    <FontAwesome5 
-                      name={showPassword ? "eye-slash" : "eye"} 
-                      size={16} 
-                      color="#64748b" 
-                      />
-                      </TouchableOpacity>
-                   </View>
-                    <TouchableOpacity onPress={() => router.push('/recuperar' as any)}>
-                   <Text className="text-[#d99b26] text-sm font-semibold text-right">
-                      olvidaste tu contra?
-                   </Text>
-                  </TouchableOpacity>
-                  </View>
-
-                  
-
-                  <TouchableOpacity
-                   onPress={handleLogin}
-                   activeOpacity={0.8}
-                   className={`py-3.5 rounded-full items-center justify-center mb-6 shadow-sm ${
-                    loading ? 'bg-[#d99b26]/60' : 'bg-[#d99b26]'
-                   }`}
-                >
-                  {loading ? (
-                    <ActivityIndicator color="#ffffff"/>
-                  ): (
-                   <Text className="text-white font-bold text-base uppercase tracking-wider">
-                     Login
-                  </Text>
-                  )}
-                  
-                  </TouchableOpacity>
-
-                  <View className="items-center gap-2">
-                
-                   <TouchableOpacity onPress={() => router.push('/registro' as any)}>
-                   <Text className="text-[#d99b26] text-sm font-semibold">
-                      ¿No tienes Cuenta? Regístrate
-                   </Text>
-                  </TouchableOpacity>
-                  </View>
-                </View>
-            
-                 
 
               </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
-        
+
       </LinearGradient>
-      
+
     )
 }

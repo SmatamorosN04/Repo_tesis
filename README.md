@@ -1,6 +1,6 @@
 # 🛡️ Seguridad Ciudadana / Alerta Ciudadana
 
-Aplicación móvil enfocada en la seguridad comunitaria y prevención del delito, desarrollada con **React Native**, **Expo SDK 57**, **Expo Router** y **NativeWind (Tailwind CSS)**.
+Aplicación móvil enfocada en la seguridad comunitaria y prevención del delito, desarrollada con **React Native**, **Expo SDK 58**, **Expo Router** y **NativeWind (Tailwind CSS)**.
 
 ---
 
@@ -67,8 +67,8 @@ Al iniciar el servidor, verás un **código QR** en la consola y las opciones de
 
 ## 🛠️ Tecnologías Principales
 
-- **[Expo (SDK 57)](https://expo.dev/)**: Plataforma y framework para React Native.
-- **[React Native (0.86)](https://reactnative.dev/)**: Framework para crear aplicaciones nativas.
+- **[Expo (SDK 58)](https://expo.dev/)**: Plataforma y framework para React Native.
+- **[React Native (0.88)](https://reactnative.dev/)**: Framework para crear aplicaciones nativas.
 - **[Expo Router](https://docs.expo.dev/router/introduction/)**: Sistema de enrutamiento y navegación basado en la estructura de archivos.
 - **[NativeWind v4](https://www.nativewind.dev/)**: Sistema de diseño basado en **Tailwind CSS** para React Native.
 - **[TypeScript](https://www.typescriptlang.org/)**: Tipado estático para JavaScript.

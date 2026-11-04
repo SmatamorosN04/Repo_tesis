@@ -2,10 +2,10 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, {useState} from "react";
-import { Logo } from "@/components/Logo";
-import { View,ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, TextInput, Alert, ActivityIndicator } from "react-native";
 import { registerUser } from "@/services/authService";
 import { LinearGradient } from "expo-linear-gradient";
+import { Logo } from "@/components/Logo";
 
 export default function RegisterScreen(){
     const router = useRouter();
@@ -20,9 +20,6 @@ export default function RegisterScreen(){
     if(e?.preventDefault){
         e.preventDefault();
     }
-    console.log("--> 1. Inicio de handleRegister");
-  console.log("Valores actualizados:", { user, email, password, confirmPassword });
-
     if (!user || !email || !password || !confirmPassword) {
         Alert.alert('Campos incompletos', 'Por favor llena todos los campos para continuar.');
         return;
@@ -49,142 +46,155 @@ export default function RegisterScreen(){
         );
     } catch (error: any) {
         Alert.alert('Error al registrar', error.message || 'Ocurrió un error al crear la cuenta.');
-        
+
     } finally {
         setLoading(false);
     }
-
-        
     };
 
     return (
         <LinearGradient
-            colors={['#FFF5C3', '#FFFFFF']} 
+            colors={['#FFF5C3', '#FFFFFF']}
             style={{ flex: 1 }}
         >
-<SafeAreaView className="flex-1 bg-gradient-to-t from-white to-[#FFF5C3]">
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding': 'height'}
-                className="flex-1"
-            >
-                <ScrollView
-                    contentContainerClassName="flex-grow justify-between p-6 md:p-12"
-                    bounces={false}
+            <SafeAreaView className="flex-1">
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding': undefined}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+                    className="flex-1"
                 >
-                    <View className="flex-row items-center gap-3">
-                        <Logo size={22} />
-                        <View>
-                            <Text className="text-base md:text-lg font-bold text-slate-900 leading-tight">
-                                Seguridad
-                            </Text>
-                            <Text className="text-base md:text-lg font-bold text-slate-900 leading-tight">
-                                Ciudadana
+                    <ScrollView
+                        contentContainerClassName="flex-grow p-6 md:p-10 pb-16"
+                        bounces={false}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        {/* Header con logo + nombre */}
+                        <View className="flex-row items-center gap-3 pt-2">
+                            <Logo size={16} />
+                            <Text className="text-[15px] font-bold text-slate-900 tracking-tight">
+                                Seguridad Ciudadana
                             </Text>
                         </View>
-                    </View>
 
-                    <View className="w-full max-w-sm self-center bg-white/80 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 my-auto">
-                        <Text className="text-2xl font-bold text-slate-900 text-center mb-6">
-                            Crear Cuenta
-                        </Text>
+                        <View className="my-auto py-8 max-w-sm self-center w-full">
+                            {/* Botón atrás estilo iOS */}
+                            <TouchableOpacity
+                                onPress={() => router.back()}
+                                className="self-start flex-row items-center mb-4"
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            >
+                                <FontAwesome5 name="chevron-left" size={16} color="#d99b26" />
+                                <Text className="text-[#d99b26] font-semibold text-[15px] ml-1.5">Atrás</Text>
+                            </TouchableOpacity>
 
-                        <View className="mb-4">
-                            <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-3">
-                                <FontAwesome5 name="user" size={16} color="#64748b" className="mr-3" />
-                                <TextInput 
-                                    placeholder="Nombre de usuario"
-                                    placeholderTextColor="#94a3b8"
-                                    value={user}
-                                    onChangeText={setUser}
-                                    className="flex-1 text-slate-800 text-base p-0"
-                                    autoCapitalize="none"
-                                />
+                            <View className="items-center mb-8">
+                                <View className="w-16 h-16 rounded-2xl bg-slate-900 items-center justify-center shadow-lg border-2 border-[#F5D547]">
+                                    <FontAwesome5 name="user-plus" size={24} color="#F5D547" />
+                                </View>
+                                <Text className="text-[28px] font-extrabold text-slate-900 tracking-tight mt-5">
+                                    Crear cuenta
+                                </Text>
+                                <Text className="text-[15px] text-slate-500 mt-1 text-center">
+                                    Únete a tu comunidad segura
+                                </Text>
                             </View>
-                        </View>
 
-                        <View className="mb-4">
-                            <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-3">
-                                <FontAwesome5 name="envelope" size={16} color="#64748b" className="mr-3"/>
-                                <TextInput
-                                    placeholder="Correo Electronico"
-                                    placeholderTextColor="#94a3b8"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType="email-address"
-                                    className="flex-1 text-slate-800 text-base p-0"
-                                    autoCapitalize="none"
-                                />
+                            {/* Campos estilo iOS */}
+                            <View className="gap-3">
+                                <View className="flex-row items-center bg-[#F2F2F7] rounded-2xl px-4 py-3.5">
+                                    <FontAwesome5 name="user" size={15} color="#8E8E93" />
+                                    <TextInput
+                                        placeholder="Nombre de usuario"
+                                        placeholderTextColor="#8E8E93"
+                                        value={user}
+                                        onChangeText={setUser}
+                                        className="flex-1 text-slate-900 text-[15px] ml-3 p-0"
+                                        autoCapitalize="none"
+                                    />
+                                </View>
+
+                                <View className="flex-row items-center bg-[#F2F2F7] rounded-2xl px-4 py-3.5">
+                                    <FontAwesome5 name="envelope" size={15} color="#8E8E93" />
+                                    <TextInput
+                                        placeholder="Correo electrónico"
+                                        placeholderTextColor="#8E8E93"
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        keyboardType="email-address"
+                                        className="flex-1 text-slate-900 text-[15px] ml-3 p-0"
+                                        autoCapitalize="none"
+                                    />
+                                </View>
+
+                                <View className="flex-row items-center bg-[#F2F2F7] rounded-2xl px-4 py-3.5">
+                                    <FontAwesome5 name="lock" size={15} color="#8E8E93" />
+                                    <TextInput
+                                        placeholder="Contraseña"
+                                        placeholderTextColor="#8E8E93"
+                                        secureTextEntry={!showPassword}
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        className="flex-1 text-slate-900 text-[15px] ml-3 p-0"
+                                    />
+                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                                        <FontAwesome5
+                                            name={showPassword ? "eye-slash": "eye"}
+                                            size={15}
+                                            color="#8E8E93"
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View className="flex-row items-center bg-[#F2F2F7] rounded-2xl px-4 py-3.5">
+                                    <FontAwesome5 name="check-double" size={15} color="#8E8E93" />
+                                    <TextInput
+                                        placeholder="Confirmar contraseña"
+                                        placeholderTextColor="#8E8E93"
+                                        secureTextEntry={!showPassword}
+                                        value={confirmPassword}
+                                        onChangeText={setConfirmPassword}
+                                        className="flex-1 text-slate-900 text-[15px] ml-3 p-0"
+                                    />
+                                </View>
                             </View>
-                        </View> 
 
-                        <View className="mb-4">
-                            <View className="flex-row items-center bg-white border border-slate-200 rounded-xl  px-4 py-3">
-                                < FontAwesome5 name="lock" size={16} color="#64748b" className="mr-3"/>
-                                <TextInput
-                                    placeholder="Contraseña"
-                                    placeholderTextColor="#94a3b8"
-                                    secureTextEntry={!showPassword}
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    className="flex-1 text-slate-800 text-base p-0"
-                                />
-                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                   <FontAwesome5
-                                    name={showPassword ? "eye-slash": "eye"}
-                                    size={14}
-                                    color="#64748b"
-                                   /> 
+                            {/* Botón principal con gradiente */}
+                            <TouchableOpacity
+                                onPress={() => handleRegister()}
+                                disabled={loading}
+                                activeOpacity={0.85}
+                                className="mt-8 items-center justify-center h-[52px] rounded-2xl overflow-hidden shadow-lg"
+                                style={{ shadowColor: '#d99b26', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}
+                            >
+                                <LinearGradient
+                                    colors={!loading ? ['#E8B33A', '#d99b26'] : ['#9CA3AF', '#9CA3AF']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={{ flex: 1, alignSelf: 'stretch', borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color='#ffffff' />
+                                    ):(
+                                        <Text className="text-[#1E1E1E] font-bold text-base tracking-wide">
+                                            Registrarse
+                                        </Text>
+                                    )}
+                                </LinearGradient>
+                            </TouchableOpacity>
+
+                            <View className="items-center mt-8">
+                                <TouchableOpacity onPress={() => router.push('/login' as any)}>
+                                    <Text className="text-slate-600 text-[15px]">
+                                        ¿Ya tienes cuenta?{' '}
+                                        <Text className="text-[#d99b26] font-bold">Inicia sesión</Text>
+                                    </Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
-
-                        <View className="mb-6">
-                            <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-3">
-                                <FontAwesome5 name="check-double" size={16} color="#64748b" className="mr-3" />
-                                <TextInput
-                                 placeholder="confirmar Contraseña "
-                                 placeholderTextColor="#94a3b8"
-                                 secureTextEntry={!showPassword}
-                                 value={confirmPassword}
-                                 onChangeText={setConfirmPassword}
-                                 className="flex-1 text-slate-800 text-base p-0"
-                                />
-                            </View>
-                        </View>
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                console.log('click detectado')
-                                handleRegister();
-                            }}
-                            disabled={loading}
-                            activeOpacity={0.8}
-                            className={`py-3.5 rounded-full items-center justify-center mb-6 shadow-sm ${
-                                loading ? 'bg-[#d99b26]/60' : 'bg-[#d99b26]'
-                            }`}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator color='#fff3ff'/>
-                                ):(
-                                    <Text className="text-white font-bold text-base uppercase tracking-wider">
-                                Registrarse
-                            </Text>
-                                )}
-                            
-                        </TouchableOpacity>
-
-                        <View className="items-center">
-                            <TouchableOpacity onPress={() => router.push('/login' as any)}>
-                                <Text className="text-slate-600 text-sm font-medium">
-                                    ¿Ya tienes cuenta? <Text className="text-[#d99b26] font-semibold">Inicia Sesion</Text>
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         </LinearGradient>
-        
+
     )
 }

@@ -45,77 +45,94 @@ export default function GuestLoginScreen() {
       colors={['#FFF5C3', '#FFFFFF']}
       style={{ flex: 1 }}
     >
-      <SafeAreaView className="flex-1 bg-gradient-to-t from-white to-[#FFF5C3]">
+      <SafeAreaView className="flex-1">
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
           className="flex-1"
         >
           <ScrollView
-            contentContainerClassName="flex-grow justify-between p-6 md:p-12"
+            contentContainerClassName="flex-grow p-6 md:p-10 pb-16"
             bounces={false}
+            keyboardShouldPersistTaps="handled"
           >
-            {/* Header / Logo */}
-            <View className="flex-row items-center gap-3">
-              <Logo size={22} />
-              <View>
-                <Text className="text-base md:text-lg font-bold text-slate-900 leading-tight">
-                  Seguridad
-                </Text>
-                <Text className="text-base md:text-lg font-bold text-slate-900 leading-tight">
-                  Ciudadana
-                </Text>
-              </View>
+            {/* Header con logo + nombre */}
+            <View className="flex-row items-center gap-3 pt-2">
+              <Logo size={16} />
+              <Text className="text-[15px] font-bold text-slate-900 tracking-tight">
+                Seguridad Ciudadana
+              </Text>
             </View>
 
-            {/* Contenedor principal centrado */}
-            <View className="w-full max-w-sm self-center bg-white/80 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 my-auto">
-              <Text className="text-2xl font-bold text-slate-900 text-center mb-2">
-                Modo Invitado
-              </Text>
-              <Text className="text-slate-500 text-sm text-center mb-6">
-                Ingrese un nombre con el cual identificarse en el sistema
-              </Text>
-
-              {/* Input Nombre de Usuario */}
-              <View className="mb-6">
-                <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-3">
-                  <FontAwesome5 name="user-tag" size={16} color="#64748b" className="mr-3" />
-                  <TextInput
-                    placeholder="Nombre de usuario"
-                    placeholderTextColor="#94a3b8"
-                    value={username}
-                    onChangeText={setUsername}
-                    className="flex-1 text-slate-800 text-base p-0"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    maxLength={20}
-                    editable={!loading}
-                  />
-                </View>
-              </View>
-
-              {/* Botón Principal */}
+            <View className="my-auto py-8 max-w-sm self-center w-full">
+              {/* Botón atrás estilo iOS */}
               <TouchableOpacity
-                onPress={handleGuestLogin}
-                activeOpacity={0.8}
+                onPress={() => router.back()}
                 disabled={loading}
-                className={`py-3.5 rounded-full items-center justify-center mb-6 shadow-sm ${
-                  loading ? 'bg-[#d99b26]/60' : 'bg-[#d99b26]'
-                }`}
+                className="self-start flex-row items-center mb-4"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                {loading ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <Text className="text-white font-bold text-base uppercase tracking-wider">
-                    Continuar
-                  </Text>
-                )}
+                <FontAwesome5 name="chevron-left" size={16} color="#d99b26" />
+                <Text className="text-[#d99b26] font-semibold text-[15px] ml-1.5">Atrás</Text>
               </TouchableOpacity>
 
-              <View className="items-center gap-2">
-                <TouchableOpacity onPress={() => router.back()} disabled={loading}>
-                  <Text className="text-[#d99b26] text-sm font-semibold">
-                    Volver al Inicio de sesión
+              <View className="items-center mb-8">
+                <View className="w-16 h-16 rounded-2xl bg-slate-900 items-center justify-center shadow-lg border-2 border-[#F5D547]">
+                  <FontAwesome5 name="user-secret" size={24} color="#F5D547" />
+                </View>
+                <Text className="text-[28px] font-extrabold text-slate-900 tracking-tight mt-5">
+                  Modo invitado
+                </Text>
+                <Text className="text-[15px] text-slate-500 mt-1 text-center leading-relaxed">
+                  Ingresa un nombre con el que identificarte en el sistema
+                </Text>
+              </View>
+
+              {/* Campo estilo iOS */}
+              <View className="flex-row items-center bg-[#F2F2F7] rounded-2xl px-4 py-3.5 mb-8">
+                <FontAwesome5 name="user-tag" size={15} color="#8E8E93" />
+                <TextInput
+                  placeholder="Nombre de usuario"
+                  placeholderTextColor="#8E8E93"
+                  value={username}
+                  onChangeText={setUsername}
+                  className="flex-1 text-slate-900 text-[15px] ml-3 p-0"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={20}
+                  editable={!loading}
+                />
+              </View>
+
+              {/* Botón principal con gradiente */}
+              <TouchableOpacity
+                onPress={handleGuestLogin}
+                activeOpacity={0.85}
+                disabled={loading}
+                className="items-center justify-center h-[52px] overflow-hidden shadow-lg rounded-2xl"
+                style={{ shadowColor: '#d99b26', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}
+              >
+                <LinearGradient
+                  colors={!loading ? ['#E8B33A', '#d99b26'] : ['#9CA3AF', '#9CA3AF']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ flex: 1, alignSelf: 'stretch', borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#ffffff" />
+                  ) : (
+                    <Text className="text-[#1E1E1E] font-bold text-base tracking-wide">
+                      Continuar
+                    </Text>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <View className="items-center mt-8">
+                <TouchableOpacity onPress={() => router.push('/login' as any)} disabled={loading}>
+                  <Text className="text-slate-600 text-[15px]">
+                    ¿Tienes cuenta?{' '}
+                    <Text className="text-[#d99b26] font-bold">Inicia sesión</Text>
                   </Text>
                 </TouchableOpacity>
               </View>

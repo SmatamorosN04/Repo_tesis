@@ -62,6 +62,7 @@ export async function isAuthenticated(): Promise<boolean>{
 export async function loginGuest(username: string): Promise<LoginResponse>{
     const data =await apiFetch<LoginResponse>('/auth/guest-login',{
         method: 'POST',
+        body: JSON.stringify({ username: username.trim() }),
     });
 
     if (data.token) {

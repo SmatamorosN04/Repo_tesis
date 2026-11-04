@@ -28,17 +28,17 @@ export const GuestLoginButton: React.FC<GuestLoginButtonProps> = ({ onSuccess })
       </View>
 
       <TouchableOpacity
-        className={`w-full bg-slate-800 border border-slate-700 rounded-full py-4 items-center justify-center shadow-md ${
-          loading ? 'opacity-60' : 'active:bg-slate-900'
+        className={`w-full bg-[#F2F2F7] rounded-2xl h-[54px] items-center justify-center ${
+          loading ? 'opacity-60' : 'active:bg-slate-200'
         }`}
         onPress={handlePress}
         disabled={loading}
         activeOpacity={0.8}
       >
         {loading ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color="#d99b26" />
         ) : (
-          <Text className="text-slate-50 text-sm md:text-base font-black tracking-wider uppercase">
+          <Text className="text-slate-900 text-[16px] font-bold tracking-wide">
             Entrar como invitado
           </Text>
         )}
