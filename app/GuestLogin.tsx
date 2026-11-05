@@ -64,18 +64,18 @@ export default function GuestLoginScreen() {
               </Text>
             </View>
 
-            <View className="my-auto py-8 max-w-sm self-center w-full">
-              {/* Botón atrás estilo iOS */}
-              <TouchableOpacity
-                onPress={() => router.back()}
-                disabled={loading}
-                className="self-start flex-row items-center mb-4"
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <FontAwesome5 name="chevron-left" size={16} color="#d99b26" />
-                <Text className="text-[#d99b26] font-semibold text-[15px] ml-1.5">Atrás</Text>
-              </TouchableOpacity>
+            {/* Botón atrás justo debajo del header, arriba de la tarjeta */}
+            <TouchableOpacity
+              onPress={() => router.back()}
+              disabled={loading}
+              className="self-start flex-row items-center mt-4"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <FontAwesome5 name="chevron-left" size={16} color="#d99b26" />
+              <Text className="text-[#d99b26] font-semibold text-[15px] ml-1.5">Atrás</Text>
+            </TouchableOpacity>
 
+            <View className="my-auto py-6 max-w-sm self-center w-full">
               <View className="items-center mb-8">
                 <View className="w-16 h-16 rounded-2xl bg-slate-900 items-center justify-center shadow-lg border-2 border-[#F5D547]">
                   <FontAwesome5 name="user-secret" size={24} color="#F5D547" />
