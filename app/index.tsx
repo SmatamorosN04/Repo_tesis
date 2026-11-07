@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import '../global.css'
-import { Logo } from '@/components/Logo';
+import BrandLogo from '@/components/BrandLogo';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GuestLoginButton } from '@/components/GuestLoginButton';
@@ -24,20 +24,13 @@ export default function WelcomeScreen(){
                 bounces={false}
             >
                 {/* Header con logo + nombre */}
-                <View className='flex-row items-center gap-3 pt-2'>
-                    <Logo size={16}/>
-                    <Text className='text-[15px] font-bold text-slate-900 tracking-tight'>
-                        Seguridad Ciudadana
-                    </Text>
-                </View>
+                
 
                 <View className="my-auto items-center py-8 gap-8">
-                    {/* Hero con ilustración */}
+                    {/* Hero con el logo de la app */}
                     <View className='items-center justify-center'>
-                        <View className='w-52 h-52 rounded-full bg-amber-200/60 border-2 border-amber-300/70 items-center justify-center'>
-                            <View className='w-36 h-36 rounded-full bg-white items-center justify-center shadow-lg'>
-                                <FontAwesome5 name="users" size={56} color="#334155" />
-                            </View>
+                        <View className='w-64 h-64 rounded-full bg-[#FFF5C3] border-2 border-amber-300/70 items-center justify-center shadow-md'>
+                            <BrandLogo variant="png" size={236}/>
                         </View>
                     </View>
 
@@ -91,7 +84,7 @@ export default function WelcomeScreen(){
                     </View>
                 </View>
 
-                <View className='flex-row justify-center gap-8 pt-4 pb-2'>
+                <View className='flex-row justify-center gap-8  pb-2'>
                     <TouchableOpacity activeOpacity={0.6}
                         onPress={() => router.push('/privacidad')}
                     >

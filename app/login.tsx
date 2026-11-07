@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome5 } from '@expo/vector-icons';
 import '../global.css'
-import { Logo } from '@/components/Logo';
+import BrandLogo from '@/components/BrandLogo';
 import React, { useState } from 'react';
 import { loginUser } from '@/services/authService';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -50,19 +50,12 @@ export default  function LoginScreen(){
                 keyboardShouldPersistTaps="handled"
                >
                  {/* Header con logo + nombre */}
-                 <View className="flex-row items-center gap-3 pt-2">
-                   <Logo size={16} />
-                   <Text className="text-[15px] font-bold text-slate-900 tracking-tight">
-                     Seguridad Ciudadana
-                   </Text>
-                 </View>
+                 
 
                  {/* Tarjeta principal estilo iOS */}
                  <View className="my-auto py-10">
                    <View className="items-center mb-8">
-                     <View className="w-16 h-16 rounded-2xl bg-slate-900 items-center justify-center shadow-lg border-2 border-[#F5D547]">
-                       <FontAwesome5 name="shield-alt" size={26} color="#F5D547" />
-                     </View>
+                     <BrandLogo variant="png" size={72} />
                      <Text className="text-[28px] font-extrabold text-slate-900 tracking-tight mt-5">
                        Bienvenido
                      </Text>

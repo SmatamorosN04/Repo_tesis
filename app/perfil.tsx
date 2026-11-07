@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
+import BrandLogo from '@/components/BrandLogo';
 
 const OPCIONES = [
   { id: 1, icon: 'user-edit' as const, label: 'Editar perfil' },
@@ -32,8 +33,9 @@ export default function PerfilScreen() {
       >
         {/* Tarjeta de perfil */}
         <View className="items-center mt-6 mb-8">
-          <View className="w-24 h-24 rounded-full bg-white items-center justify-center shadow-lg border-4 border-[#F5D547]">
-            <FontAwesome5 name="user" size={40} color="#94a3b8" />
+          {/* Avatar con el logo de la app (variante jpeg: ocasión especial) */}
+          <View className="w-24 h-24 rounded-full overflow-hidden shadow-lg border-4 border-[#F5D547]">
+            <BrandLogo variant="jpeg" size={88} />
           </View>
           <Text className="text-xl font-bold text-slate-900 mt-4">usuario</Text>
           <Text className="text-slate-500 text-sm mt-1">usuario@correo.com</Text>

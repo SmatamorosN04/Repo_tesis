@@ -5,7 +5,7 @@ import React, {useState} from "react";
 import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, TextInput, Alert, ActivityIndicator } from "react-native";
 import { registerUser } from "@/services/authService";
 import { LinearGradient } from "expo-linear-gradient";
-import { Logo } from "@/components/Logo";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function RegisterScreen(){
     const router = useRouter();
@@ -70,7 +70,7 @@ export default function RegisterScreen(){
                     >
                         {/* Header con logo + nombre */}
                         <View className="flex-row items-center gap-3 pt-2">
-                            <Logo size={16} />
+                            <BrandLogo variant="svg" size={34} />
                             <Text className="text-[15px] font-bold text-slate-900 tracking-tight">
                                 Seguridad Ciudadana
                             </Text>
@@ -88,9 +88,7 @@ export default function RegisterScreen(){
                             </TouchableOpacity>
 
                             <View className="items-center mb-8">
-                                <View className="w-16 h-16 rounded-2xl bg-slate-900 items-center justify-center shadow-lg border-2 border-[#F5D547]">
-                                    <FontAwesome5 name="user-plus" size={24} color="#F5D547" />
-                                </View>
+                                <BrandLogo variant="png" size={72} />
                                 <Text className="text-[28px] font-extrabold text-slate-900 tracking-tight mt-5">
                                     Crear cuenta
                                 </Text>

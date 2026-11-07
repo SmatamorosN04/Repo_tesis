@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome5 } from '@expo/vector-icons';
 import React, {useState} from 'react';
-import { Logo } from '@/components/Logo';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function RecuperarScreen(){
     const router = useRouter();
@@ -33,12 +33,7 @@ export default function RecuperarScreen(){
                     keyboardShouldPersistTaps="handled"
                 >
                     {/* Header con logo + nombre */}
-                    <View className='flex-row items-center gap-3 pt-2'>
-                        <Logo size={16} />
-                        <Text className='text-[15px] font-bold text-slate-900 tracking-tight'>
-                            Seguridad Ciudadana
-                        </Text>
-                    </View>
+                    
 
                     <View className='my-auto py-8 max-w-sm self-center w-full'>
                         {/* Botón atrás estilo iOS */}
@@ -54,9 +49,7 @@ export default function RecuperarScreen(){
                         {!send ? (
                             <>
                                 <View className='items-center mb-8'>
-                                    <View className='w-16 h-16 rounded-2xl bg-slate-900 items-center justify-center shadow-lg border-2 border-[#F5D547]'>
-                                        <FontAwesome5 name='lock' size={24} color='#F5D547' />
-                                    </View>
+                                    <BrandLogo variant='png' size={72} />
                                     <Text className='text-[28px] font-extrabold text-slate-900 tracking-tight mt-5'>
                                         Recuperar contraseña
                                     </Text>
