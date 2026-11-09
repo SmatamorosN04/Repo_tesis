@@ -4,6 +4,8 @@ import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { AppHeader } from '@/components/AppHeader';
+import ScreenSkeleton from '@/components/ScreenSkeleton';
+import { useScreenSkeleton } from '@/hooks/useScreenSkeleton';
 
 const REPORTES = [
   {
@@ -45,6 +47,9 @@ const REPORTES = [
 ];
 
 export default function ReportesScreen() {
+  // Skeleton en el primer montaje de la pantalla (luego queda en caché)
+  const cargando = useScreenSkeleton();
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <AppHeader />
@@ -56,28 +61,34 @@ export default function ReportesScreen() {
         </Text>
       </View>
 
-      <ScrollView
-        contentContainerClassName="px-5 pb-24 gap-3"
-        showsVerticalScrollIndicator={false}
-      >
-        {REPORTES.map((r) => (
-          <View
-            key={r.id}
-            className="flex-row items-center bg-white rounded-2xl p-4 border border-slate-100 shadow-sm"
+      <View style={{ flex: 1 }}>
+        {cargando ? (
+          <ScreenSkeleton variant="list" />
+        ) : (
+          <ScrollView
+            contentContainerClassName="px-5 pb-24 gap-3"
+            showsVerticalScrollIndicator={false}
           >
-            <View className={`w-12 h-12 rounded-2xl ${r.bg} items-center justify-center`}>
-              <FontAwesome5 name={r.icon} size={18} color={r.color} />
-            </View>
+            {REPORTES.map((r) => (
+              <View
+                key={r.id}
+                className="flex-row items-center bg-white rounded-2xl p-4 border border-slate-100 shadow-sm"
+              >
+                <View className={`w-12 h-12 rounded-2xl ${r.bg} items-center justify-center`}>
+                  <FontAwesome5 name={r.icon} size={18} color={r.color} />
+                </View>
 
-            <View className="flex-1 ml-3">
-              <Text className="text-[15px] font-semibold text-slate-900">{r.tipo}</Text>
-              <Text className="text-sm text-slate-500 mt-0.5">{r.lugar}</Text>
-            </View>
+                <View className="flex-1 ml-3">
+                  <Text className="text-[15px] font-semibold text-slate-900">{r.tipo}</Text>
+                  <Text className="text-sm text-slate-500 mt-0.5">{r.lugar}</Text>
+                </View>
 
-            <Text className="text-xs text-slate-400 font-medium">{r.time}</Text>
-          </View>
-        ))}
-      </ScrollView>
+                <Text className="text-xs text-slate-400 font-medium">{r.time}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
     </SafeAreaView>
   );
 }

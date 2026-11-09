@@ -39,6 +39,12 @@ export default function TabLayout() {
       screenOptions={{
         // Deshabilitar el header estático para usar headers propios en cada pantalla
         headerShown: false,
+        // === Rendimiento de navegación ===
+        // La pestaña inactiva se congela: no re-renderiza ni ejecuta frames
+        // (el mapa de Google deja de trabajar al cambiar a otra tab).
+        freezeOnBlur: true,
+        // Montaje diferido: cada tab se monta hasta la primera vez que se visita.
+        lazy: true,
         tabBarActiveTintColor: '#d99b26',
         tabBarInactiveTintColor: '#94a3b8',
         tabBarLabelStyle: {

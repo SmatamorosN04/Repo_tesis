@@ -1,27 +1,68 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
+import Svg, { Defs, Mask, Polygon, Rect } from 'react-native-svg';
 
-/**
- * Centro geográfico de estudio del sistema, según el protocolo de tesis:
- * ciudad de Masaya, Nicaragua, con un radio de análisis aproximado de 5 km.
- */
-export const MASAYA_CENTER = { lat: 11.9744, lng: -86.0942 };
-export const RADIO_5KM = 5000;
+import {
+  MASAYA_BOUNDS,
+  MASAYA_CENTER,
+  MASAYA_POLIGONO,
+  RADIO_5KM,
+} from '@/constants/masaya';
+
+const PADDING = 14;
+
+/** Convierte coordenadas geográficas a píxeles dentro del área del mapa. */
+function geoAPixel(
+  lat: number,
+  lng: number,
+  w: number,
+  h: number,
+): { x: number; y: number } {
+  const innerW = Math.max(1, w - PADDING * 2);
+  const innerH = Math.max(1, h - PADDING * 2);
+  return {
+    x: PADDING + ((lng - MASAYA_BOUNDS.lngMin) / (MASAYA_BOUNDS.lngMax - MASAYA_BOUNDS.lngMin)) * innerW,
+    y: PADDING + ((MASAYA_BOUNDS.latMax - lat) / (MASAYA_BOUNDS.latMax - MASAYA_BOUNDS.latMin)) * innerH,
+  };
+}
 
 /**
  * Placeholder estilizado del mapa para web (react-native-maps no soporta web).
  * En móvil nativo se usa react-native-maps (app/(tabs)/index.tsx).
+ *
+ * Dibuja el POLÍGONO real del sector urbano de Masaya (OSM) y oscurece
+ * todo lo que queda fuera del área de operación.
  */
 export default function MapaWeb() {
+  const [size, setSize] = useState({ w: 0, h: 0 });
+
   const INCIDENTES = [
     { id: 1, top: '28%', left: '22%', type: 'exclamation-triangle', color: '#ef4444' },
     { id: 2, top: '52%', left: '68%', type: 'fire', color: '#f97316' },
     { id: 3, top: '68%', left: '35%', type: 'car-crash', color: '#eab308' },
   ];
 
+  const listo = size.w > 0 && size.h > 0;
+
+  const polygonPoints = listo
+    ? MASAYA_POLIGONO.map((p) => {
+        const { x, y } = geoAPixel(p.lat, p.lng, size.w, size.h);
+        return `${x},${y}`;
+      }).join(' ')
+    : '';
+
+  const parque = listo
+    ? geoAPixel(MASAYA_CENTER.lat, MASAYA_CENTER.lng, size.w, size.h)
+    : null;
+
   return (
-    <View className="flex-1">
+    <View
+      className="flex-1"
+      onLayout={(e) =>
+        setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })
+      }
+    >
       <View className="absolute inset-0 bg-[#E8EEF2]" />
 
       {/* Bloques / manzanas */}
@@ -55,6 +96,61 @@ export default function MapaWeb() {
       <View style={{ position: 'absolute', top: '45%', left: 0, right: 0, height: 16 }} className="bg-[#BFD7EA]" />
       <View style={{ position: 'absolute', left: '40%', top: 0, bottom: 0, width: 16 }} className="bg-[#BFD7EA]" />
 
+      {/* Polígono real del sector + máscara oscura fuera del área */}
+      {listo && (
+        <Svg
+          style={StyleSheet.absoluteFill}
+          width={size.w}
+          height={size.h}
+          pointerEvents="none"
+        >
+          <Defs>
+            <Mask
+              id="mascara-fuera-masaya"
+              x={0}
+              y={0}
+              width={size.w}
+              height={size.h}
+              maskUnits="userSpaceOnUse"
+              maskContentUnits="userSpaceOnUse"
+            >
+              <Rect x={0} y={0} width={size.w} height={size.h} fill="#FFFFFF" />
+              <Polygon points={polygonPoints} fill="#000000" />
+            </Mask>
+          </Defs>
+          <Rect
+            x={0}
+            y={0}
+            width={size.w}
+            height={size.h}
+            fill="rgba(15,23,42,0.30)"
+            mask="url(#mascara-fuera-masaya)"
+          />
+          <Polygon
+            points={polygonPoints}
+            fill="rgba(217,155,38,0.10)"
+            stroke="#d99b26"
+            strokeWidth={2}
+          />
+        </Svg>
+      )}
+
+      {/* Punto principal: Parque Central de Masaya */}
+      <View
+        style={
+          parque
+            ? { position: 'absolute', left: parque.x - 18, top: parque.y - 18, alignItems: 'center' }
+            : { position: 'absolute', top: '42%', left: '51%', alignItems: 'center' }
+        }
+      >
+        <View className="w-9 h-9 rounded-full bg-[#F5D547] items-center justify-center shadow-md border border-amber-500/40">
+          <FontAwesome5 name="star" size={14} color="#7a5410" />
+        </View>
+        <View className="bg-white/95 rounded-full px-2 py-0.5 mt-1 shadow-sm">
+          <Text className="text-[10px] font-bold text-slate-700">Parque Central</Text>
+        </View>
+      </View>
+
       {/* Ubicación del usuario (punto azul estilo iOS) */}
       <View style={{ position: 'absolute', top: '46%', left: '44%' }}>
         <View className="w-16 h-16 rounded-full bg-[#3B82F6]/20 items-center justify-center">
@@ -78,7 +174,7 @@ export default function MapaWeb() {
         <View className="bg-white/95 rounded-2xl px-3 py-2 shadow-md">
           <Text className="text-[11px] text-slate-500 font-semibold">Zona de estudio</Text>
           <Text className="text-[13px] text-slate-800 font-bold">
-            Masaya, Nicaragua · r = {RADIO_5KM / 1000} km
+            Masaya · Parque Central · r = {RADIO_5KM / 1000} km
           </Text>
         </View>
       </View>

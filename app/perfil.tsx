@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import BrandLogo from '@/components/BrandLogo';
+import ScreenSkeleton from '@/components/ScreenSkeleton';
+import { useScreenSkeleton } from '@/hooks/useScreenSkeleton';
 
 const OPCIONES = [
   { id: 1, icon: 'user-edit' as const, label: 'Editar perfil' },
@@ -16,6 +18,8 @@ const OPCIONES = [
 
 export default function PerfilScreen() {
   const router = useRouter();
+  // Skeleton mientras la pantalla se monta por primera vez
+  const cargando = useScreenSkeleton();
 
   return (
     <SafeAreaView className="flex-1 bg-[#F2F5F7]" edges={['top', 'bottom']}>
@@ -27,10 +31,14 @@ export default function PerfilScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        contentContainerClassName="px-5 pb-10"
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={{ flex: 1 }}>
+        {cargando ? (
+          <ScreenSkeleton variant="profile" />
+        ) : (
+          <ScrollView
+            contentContainerClassName="px-5 pb-10"
+            showsVerticalScrollIndicator={false}
+          >
         {/* Tarjeta de perfil */}
         <View className="items-center mt-6 mb-8">
           {/* Avatar con el logo de la app (variante jpeg: ocasión especial) */}
@@ -77,6 +85,8 @@ export default function PerfilScreen() {
           </View>
         </TouchableOpacity>
       </ScrollView>
+        )}
+      </View>
     </SafeAreaView>
   );
 }

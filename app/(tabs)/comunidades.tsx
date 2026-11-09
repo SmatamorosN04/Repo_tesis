@@ -4,6 +4,8 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { AppHeader } from '@/components/AppHeader';
+import ScreenSkeleton from '@/components/ScreenSkeleton';
+import { useScreenSkeleton } from '@/hooks/useScreenSkeleton';
 
 const COMUNIDADES = [
   {
@@ -30,6 +32,9 @@ const COMUNIDADES = [
 ];
 
 export default function ComunidadesScreen() {
+  // Skeleton en el primer montaje de la pantalla (luego queda en caché)
+  const cargando = useScreenSkeleton();
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <AppHeader />
@@ -41,29 +46,35 @@ export default function ComunidadesScreen() {
         </Text>
       </View>
 
-      <ScrollView
-        contentContainerClassName="px-5 pb-24 gap-3"
-        showsVerticalScrollIndicator={false}
-      >
-        {COMUNIDADES.map((c) => (
-          <TouchableOpacity key={c.id} activeOpacity={0.7}>
-            <View className="flex-row items-center bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-              <View className="w-12 h-12 rounded-2xl bg-slate-900 items-center justify-center">
-                <FontAwesome5 name={c.icon} size={18} color="#F5D547" />
-              </View>
+      <View style={{ flex: 1 }}>
+        {cargando ? (
+          <ScreenSkeleton variant="list" />
+        ) : (
+          <ScrollView
+            contentContainerClassName="px-5 pb-24 gap-3"
+            showsVerticalScrollIndicator={false}
+          >
+            {COMUNIDADES.map((c) => (
+              <TouchableOpacity key={c.id} activeOpacity={0.7}>
+                <View className="flex-row items-center bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+                  <View className="w-12 h-12 rounded-2xl bg-slate-900 items-center justify-center">
+                    <FontAwesome5 name={c.icon} size={18} color="#F5D547" />
+                  </View>
 
-              <View className="flex-1 ml-3">
-                <Text className="text-[15px] font-semibold text-slate-900">{c.nombre}</Text>
-                <Text className="text-sm text-slate-500 mt-0.5">
-                  {c.miembros} vecinos · {c.alertas} alertas activas
-                </Text>
-              </View>
+                  <View className="flex-1 ml-3">
+                    <Text className="text-[15px] font-semibold text-slate-900">{c.nombre}</Text>
+                    <Text className="text-sm text-slate-500 mt-0.5">
+                      {c.miembros} vecinos · {c.alertas} alertas activas
+                    </Text>
+                  </View>
 
-              <FontAwesome5 name="chevron-right" size={14} color="#cbd5e1" />
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+                  <FontAwesome5 name="chevron-right" size={14} color="#cbd5e1" />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
     </SafeAreaView>
   );
 }

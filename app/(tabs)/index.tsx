@@ -6,8 +6,9 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import { AppHeader } from '@/components/AppHeader';
-import MapaWeb, { MASAYA_CENTER, RADIO_5KM } from '@/components/MapaPlaceholder';
 import ReportarIncidenteFab from '@/components/ReportarIncidenteFab';
+import ScreenSkeleton from '@/components/ScreenSkeleton';
+import { clampToMasaya, MASAYA_CENTER } from '@/constants/masaya';
 
 export default function MapaScreen() {
   const [busqueda, setBusqueda] = useState('');
@@ -15,10 +16,12 @@ export default function MapaScreen() {
   const [mapRegion, setMapRegion] = useState({
     latitude: MASAYA_CENTER.lat,
     longitude: MASAYA_CENTER.lng,
-    latitudeDelta: 0.09,
-    longitudeDelta: 0.09,
+    latitudeDelta: 0.04,
+    longitudeDelta: 0.04,
   } as { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number });
   const [cargandoUbicacion, setCargandoUbicacion] = useState(false);
+  // En web el placeholder es instantáneo; en nativo esperamos a que el mapa pinte
+  const [mapoListo, setMapoListo] = useState(Platform.OS === 'web');
 
   // Obtener la ubicación del usuario (dentro o fuera del radio de estudio)
   useEffect(() => {
@@ -39,9 +42,10 @@ export default function MapaScreen() {
     // TODO: geocoding (Nominatim/GeoPy del backend) → animar mapRegion al destino
   };
 
-  /** Recentra el mapa en la ubicación real del usuario; si falla, al centro de Masaya */
+  /** Recentra el mapa en la ubicación real del usuario; si falla o está fuera
+   *  del municipio, se recorta al área de operación de Masaya. */
   const irA_miUbicacion = () => {
-    const target = ubicacion ?? { lat: MASAYA_CENTER.lat, lng: MASAYA_CENTER.lng };
+    const target = clampToMasaya(ubicacion ?? MASAYA_CENTER);
     setMapRegion((prev) => ({
       ...prev,
       latitude: target.lat,
@@ -52,9 +56,13 @@ export default function MapaScreen() {
   };
 
   /** Mapa según plataforma: nativo (react-native-maps) o placeholder estilizado (web).
-   *  El módulo nativo se require de forma condicional para que web no lo evalúe. */
+   *  Cada módulo se require de forma condicional para que la plataforma contraria
+   *  no lo evalúe (react-native-maps no existe en web; react-native-svg solo se
+   *  usa en el placeholder web y no debe cargarse en nativo). */
   const renderMapa = () => {
     if (Platform.OS === 'web') {
+      // Evalúa react-native-svg SOLO en web
+      const MapaWeb = require('@/components/MapaPlaceholder').default;
       return <MapaWeb />;
     }
     // Evalúa react-native-maps SOLO en nativo
@@ -65,6 +73,7 @@ export default function MapaScreen() {
         onRegionChange={setMapRegion}
         ubicacion={ubicacion}
         onCentro={irA_miUbicacion}
+        onMapReady={() => setMapoListo(true)}
       />
     );
   };
@@ -73,7 +82,11 @@ export default function MapaScreen() {
     <SafeAreaView className="flex-1 bg-[#F2F5F7]" edges={['top']}>
       <View className="flex-1">
         {/* ===== Mapa ===== */}
-        <View className="absolute inset-0">{renderMapa()}</View>
+        <View className="absolute inset-0">
+          {renderMapa()}
+          {/* Skeleton mientras el mapa termina de cargar (evita el "se pegó") */}
+          {!mapoListo && <ScreenSkeleton variant="map" label="Cargando mapa…" />}
+        </View>
 
         {/* ===== Overlay superior con el degradado del login (#FFF5C3 → transparente) ===== */}
         <LinearGradient

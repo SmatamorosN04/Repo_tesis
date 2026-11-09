@@ -230,6 +230,127 @@ Nicaragua 🇳🇮, 2048×2048, fondo blanco opaco, SVG con fill `#FDD704`).
 
 ---
 
+### Sesión 8 — Navegación fluida: skeletons + congelado de pantallas ⚡
+
+> Nota: el primer intento de esta sesión (overlay global con spinner + navegación
+> diferida un frame) se **descartó** porque el retraso de un frame se sentía como
+> "app pegada". Se rehízo con este enfoque final, trabajando por partes.
+
+**Problema**: al cambiar entre pantallas la app parecía congelada, sin señal visual
+de carga, y las pantallas inactivas seguían trabajando en segundo plano.
+
+**1. Feedback de carga por pantalla (sin overlay global, sin retrasos)**
+- **`components/LoadingSpinner.tsx`**: anillo giratorio ámbar con `Animated` +
+  `useNativeDriver` (gira en hilo nativo). Se usa **solo en el mapa**.
+- **`components/ScreenSkeleton.tsx`**: skeleton con pulso suave (opacidad animada
+  nativa), `pointerEvents="none"`. Variantes:
+  - `'map'`: calles tenues + barra de búsqueda simulada + spinner "Cargando mapa…".
+  - `'list'`: tarjetas apiladas (sin spinner).
+  - `'profile'`: avatar + nombre + filas de opciones (sin spinner).
+- **`hooks/useScreenSkeleton.ts`**: devuelve `true` durante el primer montaje de la
+  pantalla y se apaga tras un mínimo de 220 ms (evita el parpadeo de 1 frame).
+  - `reportes.tsx` y `comunidades.tsx` → skeleton `'list'`.
+  - `perfil.tsx` → skeleton `'profile'`.
+  - `app/(tabs)/index.tsx` → skeleton `'map'` hasta que `MapView` dispara
+    `onMapReady` (nueva prop propagada en `MapaNativo.tsx`).
+
+**2. Congelación de pantallas inactivas**
+- `app/_layout.tsx`: `enableFreeze(true)` de `react-native-screens` (una vez, antes
+  de montar el navegador) + `freezeOnBlur: true` en el `Stack`.
+- `app/(tabs)/_layout.tsx`: `freezeOnBlur: true` → la pantalla inactiva no re-renderiza
+  ni ejecuta frames (el mapa de Google deja de trabajar al cambiar de tab).
+
+**3. Montaje diferido de tabs**
+- `app/(tabs)/_layout.tsx`: `lazy: true` → cada tab se monta la primera vez que se
+  visita; al arrancar solo carga el mapa.
+
+**Descartado en esta sesión**: `components/NavigationFeedback.tsx` (overlay global),
+el `tabBarButton` personalizado y el retraso con `requestAnimationFrame`.
+
+**Verificado**: `tsc` limpio + exports web y android OK.
+
+---
+
+### Sesión 9 — Mapa delimitado por polígono (centro: Parque Central) 🗺
+
+**Punto principal**: **Parque Central de Masaya** — `11.9737616, -86.0959396`
+(Google Places). El área de operación es el **polígono real del sector urbano de
+Masaya**, no un rectángulo.
+
+**Fuente del polígono**:
+- OpenStreetMap, relation **21847517** (`boundary=administrative`, `admin_level=10`,
+  `place=city`, "Masaya").
+- Descargado con Nominatim (`polygon_geojson=1`) y simplificado con
+  **Douglas-Peucker** (tolerancia 0.00035° ≈ 40 m) → **361 puntos**.
+- Autogenerado en `constants/masayaPolygon.ts` (© OpenStreetMap contributors, ODbL).
+  No editar a mano.
+- Se eligió el sector urbano (admin 10) porque encuadra el radio de estudio de 5 km.
+  Si se quisiera todo el municipio (admin 6), el polígono se cambia en un solo archivo.
+
+**`constants/masaya.ts` (fuente única de verdad)**:
+- `PARQUE_CENTRAL_MASAYA` / `MASAYA_CENTER`, `RADIO_5KM`, `MASAYA_POLIGONO`.
+- `MASAYA_BOUNDS` = bbox calculado del polígono (solo para límites de zoom y
+  mapeo del placeholder; la validez real es el polígono).
+- **`estaDentroDeMasaya()`**: *point-in-polygon* por ray casting.
+- **`clampToMasaya()`**: si el punto está fuera, calcula el punto más cercano sobre
+  el borde y lo empuja ~165 m hacia el centroide (verificado: interior).
+
+**Delimitación efectiva** (`components/MapaNativo.tsx`):
+- **Recorte por polígono** en cada `onRegionChangeComplete`: si el centro del mapa
+  queda fuera del polígono, `clampToMasaya()` lo devuelve adentro y
+  `animateToRegion(…, 250)` suaviza el rebote.
+- **Zoom acotado**: se limita el delta para que el bbox del polígono quepa en la
+  vista (`minZoomLevel 13.5`, `maxZoomLevel 18`).
+- **Máscara**: `Polygon` exterior con `holes={[polígono]}` → solo el interior del
+  sector urbano queda visible; el resto se oscurece con borde ámbar.
+- **Pin del Parque Central** ("Centro del área de operación") y círculo de 5 km.
+
+**Web** (`components/MapaPlaceholder.tsx`):
+- `react-native-svg` dibuja el **polígono real** y una `Mask` que oscurece todo
+  lo que está fuera; el pin del Parque Central se posiciona por conversión
+  geo→píxel con `onLayout` (no con porcentajes fijos).
+
+**Otros**:
+- `app/(tabs)/index.tsx`: región inicial 0.04° centrada en el parque; el botón de
+  geolocalización usa `clampToMasaya()` si el usuario está fuera del polígono.
+
+**Verificado**: `tsc` limpio; point-in-polygon probado (Parque Central = dentro,
+Managua/Granada/Nindirí = fuera); exports web y android OK.
+
+### Sesión 10 — Diagnóstico del error `Cannot read property 'ErrorBoundary' of undefined` 🩺
+
+**Síntoma**: al abrir la app en nativo, Expo Router lanzaba
+`TypeError: Cannot read property 'ErrorBoundary' of undefined` con un code frame
+en `react.development.js` (`useMemo`).
+
+**Diagnóstico**:
+- Ese mensaje **no es la causa raíz**: es el error secundario que lanza
+  `fromImport()` de `expo-router/build/useScreens.js` cuando un módulo de ruta se
+  evalúa como `undefined` (su código hace destructuring de `ErrorBoundary`).
+  En otras palabras: *una ruta falló al cargar* y Expo Router lo enmascaró.
+- El proyecto venía de la migración a SDK 58 y **solo se había verificado con
+  `tsc` y exports**, nunca en dispositivo. `expo install --check` detectó que el
+  JS nativo estaba por detrás de Expo Go:
+  - `react-native` 0.88.0 → **0.88.1**
+  - `react-native-screens` 4.28.0 → **~4.30.1**
+  - `react-native-safe-area-context` 5.9.1 → **~5.11.1**
+  - `react-native-reanimated` 4.7.0 → **4.7.1**
+  - `typescript` 5.8.3 → **~6.0.3**
+- Además, `app/(tabs)/index.tsx` importaba **estáticamente** el placeholder web,
+  lo que hacía que `react-native-svg` se evaluara también en nativo (código que
+  solo se usa en web).
+
+**Correcciones**:
+- `npx expo install --fix` → dependencias nativas alineadas con Expo SDK 58
+  (`expo install --check` ahora responde "Dependencies are up to date").
+- `app/(tabs)/index.tsx`: `MapaPlaceholder` ahora se carga con
+  `require()` **solo en la rama web** (igual que `MapaNativo` solo en nativo),
+  de modo que `react-native-svg` no se evalúa en el arranque nativo.
+
+**Verificado**: `tsc` limpio (con TS 6) + exports web y android OK.
+
+---
+
 ## 🧭 Decisiones de arquitectura
 
 Log de decisiones importantes con su contexto, para no repetir dolor:
@@ -245,6 +366,11 @@ Log de decisiones importantes con su contexto, para no repetir dolor:
 | 7 | — | **NO usar tab bar custom** (`tabBar={(props)=>...}`) | Falló 2 veces (tabs apiladas a un lado); el default + `tabBarStyle` es estable. No revertir esta decisión sin causa nueva investigada con evidencia. |
 | 8 | — | Constantes `TAB_BAR_H = 64`, `TAB_BAR_BOTTOM = 10/6` | Mantener sincronizadas en `_layout.tsx` **y** `ReportarIncidenteFab.tsx`. |
 | 9 | — | Un solo comando `npm run dev` | Backend + Metro en paralelo, sin atrasos de dev/testeo. |
+| 10 | 2026-11-09 | Skeleton por pantalla (`useScreenSkeleton`) en lugar de overlay global con spinner | El overlay + retraso de un frame se sentía como app congelada. El skeleton respeta el layout, no retrasa la navegación y el spinner queda solo para el mapa (el único con carga real). |
+| 11 | 2026-11-09 | `enableFreeze` + `freezeOnBlur` + `lazy` en tabs | Las pantallas inactivas no deben seguir re-renderizando ni ejecutando frames (mapa de Google incluido); los tabs cargan hasta su primera visita. |
+| 12 | 2026-11-09 | Centro del área de operación = **Parque Central de Masaya** y constantes en `constants/masaya.ts` | Punto principal definido por el usuario; una sola fuente de verdad evita que mapa nativo y placeholder web se desincronicen. |
+| 13 | 2026-11-09 | Delimitación por **polígono real** (OSM) con point-in-polygon, no por rectángulo | El usuario pidió "punto en polígonos". El sector urbano (admin 10, 361 pts simplificados) encuadra el radio de 5 km; el polígono se puede cambiar por el del municipio completo (admin 6) sin tocar el resto del código. |
+| 14 | 2026-11-09 | Versiones nativas **siempre alineadas con Expo SDK** (`expo install --fix`) y módulos de plataforma con `require()` condicional | `ErrorBoundary of undefined` era un error secundario de Expo Router por una ruta que no cargaba; el JS nativo iba por detrás de Expo Go. Verificar en dispositivo, no solo con `tsc`/exports. |
 
 ## 🎨 Convenciones de diseño de la app
 
@@ -272,6 +398,7 @@ Referencia rápida de look & feel (útil para nuevas pantallas):
 
 ### 🔲 Pendiente
 - [ ] **Conectar el FAB** "Reportar incidente" al flujo real (`POST /incidentes/reportar`).
+- [ ] Verificar en dispositivo la delimitación por polígono (rebote en bordes, pin del parque y zoom mínimo).
 - [ ] Icono y splash de la app con el logo nuevo (`app.json` → `icon` / plugin splash; fondo crema `#FFF5C3`).
 - [ ] Screens funcionales de `reportes.tsx` y `comunidades.tsx` (hoy son maquetas).
 - [ ] Persistencia de sesión guest/usuario en `expo-secure-store` (revisar flujo de logout).
